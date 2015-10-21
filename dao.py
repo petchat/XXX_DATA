@@ -3,7 +3,7 @@ __author__ = 'jiusi'
 from pymongo import MongoClient
 
 
-db = client.CEC_DATA
+
 
 
 def get_prescription(bId):
@@ -20,7 +20,3 @@ def get_valid_prescriptions():
         'itemCount': {'$exists': True},
         'bId': {'$exists': True}
     })
-
-
-
-
