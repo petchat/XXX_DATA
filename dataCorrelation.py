@@ -10,7 +10,6 @@ import requests
 def load_json(path):
     with open(path, 'r') as f:
         j = json.loads(f.read())
-
         return j
 
 
@@ -175,7 +174,7 @@ def getIllType(bid):
             return key
 
 
-def getMapMeta(bid4map, j):
+def getMapMeta(bid4map, geo_type, j):
     metas = []
 
     bids = []
@@ -187,10 +186,16 @@ def getMapMeta(bid4map, j):
     for ele in j:
         for bid in bids:
             if ele['BAH']['data'] == bid:
-
                 try:
-                    geo = getLocation(ele['address']['data'])['result']['location']
-                except Exception:
+                    if geo_type == 'baidu':
+                        geo = getLocation(ele['address']['data'])['result']['location']
+                    elif geo_type == 'google':
+                        geo = getGoogleCoor(ele['address']['data'], "西安")['results']['geometry']['location']
+                    else:
+                        print 'wrong geo type:', geo_type
+                        return
+                except Exception, e:
+                    print e.message
                     print 'bad addr:', ele['address']
                     geo = {}
 
@@ -225,6 +230,16 @@ def getLocation(address):
     return r.json()
 
 
+def getGoogleCoor(address, city):
+
+    address = city + ' ' + address
+
+    url = 'http://maps.google.com/maps/api/geocode/json?address=%s&sensor=false'
+    com = url % (address)
+
+    r = requests.get(com)
+    return r.json()
+
 def getHospitalAddress(path, outpath):
 
     with open(path, 'r') as f:
@@ -244,17 +259,23 @@ def getHospitalAddress(path, outpath):
     savejson(d, outpath)
 
 
+
+
+
+
 if __name__ == '__main__':
-    # j = load_json('/Users/jiusi/Desktop/refined.json')
-    # j = correctType(j)
+    j = load_json('/Users/jiusi/Desktop/refined.json')
+    j = correctType(j)
     # j_1 = load_json('/Users/jiusi/Desktop/refined_1.json')
     # j_1 = correctType(j_1)
 
 
-    # l = getMapMeta(BID4MAP, j)
-    # print l
+    l = getMapMeta(BID4MAP, 'google', j)
+    print l
     #
     # add = '陕西省西安市长安区郭杜镇南街1号'
     # print getLocation(add)
 
-    getHospitalAddress('/Users/jiusi/Desktop/mapMeta_refined.json', '/Users/jiusi/Desktop/mapMeta_withHos.json')
+
+
+    # getHospitalAddress('/Users/jiusi/Desktop/mapMeta_refined.json', '/Users/jiusi/Desktop/mapMeta_withHos.json')
